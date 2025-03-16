@@ -4,6 +4,9 @@
 name: Build and Release uYouPlus
 
 on:
+  push:
+    branches:
+      - test
   workflow_dispatch:
     inputs:
       uyou_version:
