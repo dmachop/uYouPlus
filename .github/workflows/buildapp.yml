@@ -55,11 +55,11 @@ jobs:
       - name: Prepare YouTube iPA test
         id: prepare_youtube_test
         run: |
+          set -x
           wget "$YOUTUBE_URL" -O main/YouTube.ipa
           cd ${{ github.workspace }}/main
           ls -ltr
           mv YouTube.ipa YouTube.zip
-          set -x
           unzip -q YouTube.zip
           youtube_version=$(defaults read "$(pwd)/Payload/YouTube.app/Info" CFBundleVersion)
           echo "==> YouTube v$youtube_version downloaded!"
