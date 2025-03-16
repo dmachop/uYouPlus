@@ -69,6 +69,24 @@ jobs:
       - name: Set PATH environment variable
         run: echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH 
 
+      - name: Prepare YouTube iPA test
+        id: prepare_youtube_test
+        run: |
+          wget "$YOUTUBE_URL" -O main/YouTube.ipa
+          cd ${{ github.workspace }}/main
+          ls -ltr
+          mv YouTube.ipa YouTube.zip
+          set -x
+          unzip -q YouTube.zip
+          youtube_version=$(defaults read "$(pwd)/Payload/YouTube.app/Info" CFBundleVersion)
+          echo "==> YouTube v$youtube_version downloaded!"
+          sed -i '' "17s#.*#YOUTUBE_VERSION = ${youtube_version}#g" Makefile
+          echo "youtube_version=${youtube_version}" >> $GITHUB_OUTPUT
+
+        env:
+          THEOS: ${{ github.workspace }}/theos
+          YOUTUBE_URL: ${{ inputs.decrypted_youtube_url }}
+
       - name: Setup Theos
         uses: actions/checkout@v4.2.1
         with:
