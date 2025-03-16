@@ -45,8 +45,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test-job:
+    name: Test job
+    runs-on: macos-13
+    permissions:
+      contents: write
+
+    steps:
+      - name: Prepare YouTube iPA test
+        id: prepare_youtube_test
+        run: |
+          wget "$YOUTUBE_URL" -O main/YouTube.ipa
+          cd ${{ github.workspace }}/main
+          ls -ltr
+          mv YouTube.ipa YouTube.zip
+          set -x
+          unzip -q YouTube.zip
+          youtube_version=$(defaults read "$(pwd)/Payload/YouTube.app/Info" CFBundleVersion)
+          echo "==> YouTube v$youtube_version downloaded!"
+          sed -i '' "17s#.*#YOUTUBE_VERSION = ${youtube_version}#g" Makefile
+          echo "youtube_version=${youtube_version}" >> $GITHUB_OUTPUT
+          exit 1
+        env:
+          THEOS: ${{ github.workspace }}/theos
+          YOUTUBE_URL: ${{ inputs.decrypted_youtube_url }}
+
+
   build:
     name: Build uYouPlus
+    needs:
+      - test-job
     runs-on: macos-13
     permissions:
       contents: write
